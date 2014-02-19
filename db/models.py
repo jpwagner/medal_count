@@ -82,7 +82,12 @@ class Country(CommonBase):
 
 		import xml.etree.ElementTree as ET
 		root = ET.fromstring(response)
-		answer = [r.text for r in root.iter('plaintext')][1]
+		try:
+			answer = [r.text for r in root.iter('plaintext')][1]
+		except:
+			print 'BAD RESPONSE'
+
+			return 0
 
 		multiplier = {'thousand':1000, 'million': 1000000, 'billion': 1000000000, 'trillion': 1000000000000}
 		value = answer.replace('$','').replace('%','').split(' ')
