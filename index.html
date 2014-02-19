@@ -18,11 +18,18 @@
     <script type="text/javascript" src="js/jquery.datatables.min.js"></script>
 
 </head>
+<body>
+    <h1>Introducing Weighting to the Olympic Medal Scoring</h1>
+
+    <h4>Inspired by <a href='http://moshayedi.net/london2012/'>a project</a> a few years back.
+    <br><br>
+    See the data collection code here <a href='http://github.com/jpwagner/medal_count'>http://github.com/jpwagner/medal_count</a>
+    <br><br>
+    </h4>
 
 <div>
     <select id="year">
-        <option value="" disabled="disabled" selected="selected">Please select a year</option>
-        <option value="2014">2014</option>
+        <option value="2014" selected="selected">2014</option>
         <option value="2012">2012</option>
         <option value="2010">2010</option>
         <option value="2008">2008</option>
@@ -56,7 +63,7 @@
         <tbody></tbody>
     </table>
 </div>
-
+</body>
 <script language="javascript">
 function reload_table_data(table, year, multi){
     table.fnClearTable();
