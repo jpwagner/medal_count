@@ -49,6 +49,9 @@ class Country(CommonBase):
 	# ethnicity
 	# religion
 
+	def record_as_dict(row):
+		return dict((col, getattr(row, col)) for col in row.__table__.columns.keys())
+
 	def stats(self):
 		return ['population', 'total area', 'population density', 'life expectancy', 
 			'gdp', 'gdp per capita']#, 'public education spending', 'health spending']
@@ -113,6 +116,9 @@ class Medals(CommonBase):
 	gold = Column(Integer)
 	silver = Column(Integer)
 	bronze = Column(Integer)
+
+	def record_as_dict(row):
+		return dict((col, getattr(row, col)) for col in row.__table__.columns.keys())
 
 	def duplicates(self, session):
 		matches = session.query(type(self)).filter_by(country_id=self.country_id).filter_by(year=self.year).all()
