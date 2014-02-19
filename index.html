@@ -1,0 +1,131 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Medal Stats</title>
+
+    <link media="all" rel="stylesheet" type="text/css" href="css/jquery.datatables.css">
+
+    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="js/jquery.datatables.min.js"></script>
+
+</head>
+
+<div>
+    <select id="year">
+        <option value="" disabled="disabled" selected="selected">Please select a year</option>
+        <option value="2014">2014</option>
+        <option value="2012">2012</option>
+        <option value="2010">2010</option>
+        <option value="2008">2008</option>
+        <option value="2006">2006</option>
+        <option value="2004">2004</option>
+        <option value="2002">2002</option>
+        <option value="2000">2000</option>
+        <option value="1998">1998</option>
+        <option value="1996">1996</option>
+        <option value="1994">1994</option>
+    </select>
+    <select id="weight">
+        <option value="" disabled="disabled" selected="selected">Please select a weighting</option>
+        <option value="none">None</option>
+        <option value="gdp">GDP</option>
+        <option value="gdp_per_capita">GDP Per Capita</option>
+        <option value="population">Population</option>
+        <option value="density">Population Density</option>
+        <option value="area">Area</option>
+        <option value="life_expectancy">Life Expectancy</option>
+    </select>
+
+    <table id="medal_table" class="dataTable">
+        <thead><tr>
+                <th>Country</th>
+                <th>Gold</th>
+                <th>Silver</th>
+                <th>Bronze</th>
+                <th>Total</th>
+        </tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script language="javascript">
+function reload_table_data(table, year, multi){
+    table.fnClearTable();
+    $.getJSON("medals.json", function(medals){
+        $.getJSON("countries.json", function(countries){
+            for (var i = 0; i < medals.length; i++) {
+                if (medals[i].year==year){
+                    for (var j = 0; j < countries.length; j++) {
+                        if (countries[j].id==medals[i].country_id){
+                            country_name = countries[j].name;
+                            switch (multi)
+                            {
+                                case "none":
+                                    multiplier = 1;
+                                    break;
+                                case "gdp":
+                                    multiplier = Number(countries[j].gdp)/1000000000000;
+                                    break;
+                                case "population":
+                                    multiplier = Number(countries[j].population)/1000000000000;
+                                    break;
+                                case "area":
+                                    multiplier = Number(countries[j].total_area)/1000000000000;
+                                    break;
+                                case "density":
+                                    multiplier = Number(countries[j].population_density)/1000;
+                                    break;
+                                case "life_expectancy":
+                                    multiplier = Number(countries[j].life_expectancy)/1000;
+                                    break;
+                                case "gdp_per_capita":
+                                    multiplier = Number(countries[j].gdp_per_capita)/1000;
+                                    break;
+                            }
+                        }
+                    }
+                    table.fnAddData([country_name, (Number(medals[i].gold)/multiplier).toString(), (Number(medals[i].silver)/multiplier).toString(), (Number(medals[i].bronze)/multiplier).toString(), (Number(medals[i].gold)/multiplier + Number(medals[i].silver)/multiplier + Number(medals[i].bronze)/multiplier).toString()]);
+                }
+            }
+        }
+    )});
+}
+
+$(document).ready(function() {
+    year = '2014';
+    multi = 'none';
+
+    var oTable = $("#medal_table").dataTable({
+        "sScrollX": "70%",
+        "aaSorting": [[ 4, "desc" ], [1, "desc"], [2, "desc"], [3, "desc"]],
+        "bPaginate": false
+    });
+
+    reload_table_data(oTable, year, multi);
+
+    $("#year").live('change',function(){
+        var select = $(this);
+        var newVal = select.val();
+        year = newVal
+        reload_table_data(oTable, year, multi)
+    });
+
+    $("#weight").live('change',function(){
+        var select = $(this);
+        var newVal = select.val();
+        multi = newVal
+        reload_table_data(oTable, year, multi)
+    });
+
+
+});
+</script>
