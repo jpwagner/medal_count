@@ -1,6 +1,6 @@
 # http://products.wolframalpha.com/api/documentation.html
 
-import httplib
+import requests
 
 from db import models
 
@@ -9,10 +9,8 @@ import settings
 def olympic_stats(year, season, appid=settings.WA_APPID):
 	endpoint = 'api.wolframalpha.com'
 
-	http = httplib.HTTPConnection(endpoint, 80)
-	# http.set_debuglevel(1)
-	http.request("GET",'/v2/query?appid=%s&input=%s+%s+olympic+medal+counts&format=plaintext&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More' % (appid, year, season))
-	response = http.getresponse().read()
+	res = requests.get('http://%s/v2/query?appid=%s&input=%s+%s+olympic+medal+counts&format=plaintext&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More&podstate=OlympicMedalistResults:OlympicData__More' % (endpoint, appid, year, season))
+	response = res.content
 
 	import xml.etree.ElementTree as ET
 	root = ET.fromstring(response)
@@ -22,7 +20,7 @@ def olympic_stats(year, season, appid=settings.WA_APPID):
 
 def get_medals(years, season):
 	for year in years:
-		print year
+		print(year)
 
 		medal_chart = olympic_stats(str(year), season)
 		rows = medal_chart.split('\n')
@@ -33,7 +31,7 @@ def get_medals(years, season):
 			if data[0]=='country': # header
 				continue
 
-			print data[0]
+			print(data[0])
 
 			c = models.Country(name=data[0])
 			matches = c.duplicates(session)
@@ -50,10 +48,10 @@ def get_medals(years, season):
 				session.commit()
 		models.end_db_session(session)
 
-summer_years = range(1992,2012+1,4)
+summer_years = settings.SUMMER_YEARS
 summer_years.reverse()
 
-winter_years = range(1992,1992+1,4) + range(1994,2014+1,4)
+winter_years = settings.WINTER_YEARS
 winter_years.reverse()
 
 get_medals(winter_years, 'winter')

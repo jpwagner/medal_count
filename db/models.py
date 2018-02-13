@@ -1,4 +1,4 @@
-import httplib
+import requests
 
 from sqlalchemy import MetaData, Column,\
 					ForeignKey, Integer, Float, String, Text, DateTime, Date, PickleType,\
@@ -66,7 +66,7 @@ class Country(CommonBase):
 		for item in self.stats():
 			value = self.query_wa(item)
 			
-			print '%s\t%s' % (item,value)
+			print('%s\t%s' % (item,value))
 
 			self.__setattr__(item.replace(' ','_'), value)
 			session.merge(self)
@@ -78,31 +78,20 @@ class Country(CommonBase):
 
 		endpoint = 'api.wolframalpha.com'
 
-		http = httplib.HTTPConnection(endpoint, 80)
-		# http.set_debuglevel(1)
-		http.request("GET",'/v2/query?appid=%s&input=%s&format=plaintext' % (appid, query.replace(' ','+')))
-		response = http.getresponse().read()
+		res = requests.get('http://%s/v2/query?appid=%s&input=%s&format=plaintext' % (endpoint, appid, query.replace(' ','+')))
+		response = res.content
 
 		import xml.etree.ElementTree as ET
-		root = ET.fromstring(response)
 		try:
+			root = ET.fromstring(response)
 			answer = [r.text for r in root.iter('plaintext')][1]
-		except:
-			print 'BAD RESPONSE'
-
-			return 0
-
-		multiplier = {'thousand':1000, 'million': 1000000, 'billion': 1000000000, 'trillion': 1000000000000}
-		value = answer.replace('$','').replace('%','').split(' ')
-
-		try: 
+			multiplier = {'thousand':1000, 'million': 1000000, 'billion': 1000000000, 'trillion': 1000000000000}
+			value = answer.replace('$','').replace('%','').split(' ')
 			float(value[0])
 		except:
-			print 'BAD VALUE: %s' % value[0]
-
+			print('BAD RESPONSE OR VALUE')
 			return 0
-
-		return float(value[0])*float(multiplier[value[1]] if multiplier.has_key(value[1]) else 1)
+		return float(value[0])*float(multiplier[value[1]] if value[1] in multiplier else 1)
 
 	def __unicode__(self):
 		return self.name
